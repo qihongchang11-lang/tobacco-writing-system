@@ -1,0 +1,15 @@
+# Render部署配置
+version: "1"
+
+services:
+  - type: web
+    name: tobacco-writing-system
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements-cloud.txt
+    startCommand: streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+      - key: CLAUDE_API_KEY
+        sync: false

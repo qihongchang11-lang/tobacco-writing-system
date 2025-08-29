@@ -1,0 +1,14 @@
+# Streamlit Cloud部署配置
+# 用于Streamlit Cloud部署的配置文件
+
+[general]
+email = ""
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+maxUploadSize = 1028
+
+[browser]
+gatherUsageStats = false
