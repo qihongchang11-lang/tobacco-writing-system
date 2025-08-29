@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国烟草报风格改写系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .entry-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+        
+        .card h3 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .prompt-box {
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .prompt-box h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .prompt-box h4::before {
+            content: '🎯';
+            margin-right: 10px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+        
+        .example-box {
+            background: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+        }
+        
+        .step {
+            counter-increment: step-counter;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .entry-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 中国烟草报风格改写系统</h1>
+            <p>基于Claude多Agent架构的智能公文写作工具</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="entry-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">💬</div>
+                        <div>
+                            <h3>方案一：Claude对话版</h3>
+                            <span style="background: #e74c3c; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;">推荐</span>
+                        </div>
+                    </div>
+                    <p><strong>零配置，立即可用</strong><br>
+                    直接在Claude对话中使用一键改写提示词，复制粘贴即可获得改写结果。</p>
+                    <div style="margin: 15px 0;">
+                        <span style="color: #27ae60;">✅ 无需安装</span><br>
+                        <span style="color: #27ae60;">✅ 即用即得</span><br>
+                        <span style="color: #27ae60;">✅ 修改透明</span>
+                    </div>
+                    <a href="#method1" class="btn">立即使用</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🌐</div>
+                        <div>
+                            <h3>方案二：本地Web版</h3>
+                        </div>
+                    </div>
+                    <p><strong>功能完整，批量处理</strong><br>
+                    本地部署Web界面，支持批量改写、历史记录、Word导出等高级功能。</p>
+                    <div style="margin: 15px 0;">
+                        <span style="color: #27ae60;">✅ 可视化界面</span><br>
+                        <span style="color: #27ae60;">✅ 批量处理</span><br>
+                        <span style="color: #f39c12;">⚠️ 需要配置</span>
+                    </div>
+                    <a href="#method2" class="btn">查看教程</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <div>
+                            <h3>方案三：命令行版</h3>
+                        </div>
+                    </div>
+                    <p><strong>程序员友好</strong><br>
+                    快速生成改写提示词，适合技术用户和自动化场景。</p>
+                    <div style="margin: 15px 0;">
+                        <span style="color: #27ae60;">✅ 自动化友好</span><br>
+                        <span style="color: #27ae60;">✅ 快速生成</span><br>
+                        <span style="color: #f39c12;">⚠️ 命令行操作</span>
+                    </div>
+                    <a href="#method3" class="btn">查看说明</a>
+                </div>
+            </div>
+            
+            <!-- 方案一详细说明 -->
+            <div id="method1" style="margin-top: 50px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px; font-size: 2em;">🎯 方案一：Claude对话版（推荐）</h2>
+                
+                <div class="steps">
+                    <div class="step">
+                        <h4>复制一键改写提示词</h4>
+                        <p>点击下方"复制提示词"按钮，复制完整的改写指令</p>
+                    </div>
+                    <div class="step">
+                        <h4>准备你的文章</h4>
+                        <p>将要改写的文章内容粘贴到提示词的指定位置</p>
+                    </div>
+                    <div class="step">
+                        <h4>发送给Claude</h4>
+                        <p>在Claude对话中发送，自动获得改写结果</p>
+                    </div>
+                </div>
+                
+                <div class="prompt-box">
+                    <h4>一键改写提示词</h4>
+                    <button class="copy-btn" onclick="copyPrompt()">复制提示词</button>
+                    <pre id="prompt-content" style="white-space: pre-wrap; font-family: monospace; font-size: 14px; line-height: 1.4; color: #555;">你是中国烟草报的资深编辑，请将用户提供的文章改写为符合烟草报风格的专业稿件。
+
+## 改写要求：
+1. **体裁识别**：判断是消息、通讯、还是经验材料
+2. **结构优化**：标题(15-25字) + 导语(40-60字) + 三段式正文
+3. **风格转换**：正式、客观、权威的语言风格
+4. **规范校对**：术语、数字、日期、机构名称规范化
+
+## 中国烟草报风格特征：
+- **语言**：正式、客观、简洁有力
+- **标题**："{主体}+{动作}+{成果}" 格式
+- **导语**：包含时间、地点、主体、动作、成效
+- **用词**：使用"扎实推进""成效显著""持续深化"等规范表达
+- **避免**：夸张词汇(震撼、惊人)、口语化表达(给力、超赞)
+- **数字**：万以上用阿拉伯数字，如"3.2万""15.6%""1.5亿元"
+- **机构**：首次使用全称"XX省烟草专卖局（公司）"
+
+## 请处理以下文章：
+
+【在这里粘贴你的原稿内容】
+
+## 期望输出格式：
+
+### 📋 改写分析
+**原文体裁**：[消息/通讯/经验材料]
+**主要调整**：[列出3-5个主要修改点]
+
+### 📝 改写结果
+
+---
+**[改写后的标题]**
+
+[改写后的导语段落]
+
+[改写后的正文第1段]
+
+[改写后的正文第2段] 
+
+[改写后的正文第3段]
+---
+
+### 📊 改写说明
+| 位置 | 原表达 | 新表达 | 修改理由 |
+|------|--------|--------|----------|
+| 标题 | xxx | xxx | 更加规范 |
+| 第1段 | xxx | xxx | 避免夸张 |
+
+**字数统计**：改写后xxx字
+**符合性评估**：结构✅ 用词✅ 格式✅</pre>
+                </div>
+                
+                <div class="example-box">
+                    <h4>🎯 测试样例</h4>
+                    <p>你可以用下面这篇文章测试效果：</p>
+                    <p><em>"某市烟草局最近在数字化建设方面取得了很好的成果。他们通过引入新的信息系统，大大提高了工作效率，员工们都觉得很给力。这个项目从去年开始，花了不少时间和精力，现在终于看到了成效。下一步，他们还打算继续扩大数字化的范围，争取在更多领域实现突破。"</em></p>
+                </div>
+            </div>
+            
+            <!-- 方案二详细说明 -->
+            <div id="method2" style="margin-top: 50px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px; font-size: 2em;">🌐 方案二：本地Web版</h2>
+                
+                <div class="warning-box">
+                    <p><strong>⚠️ 需要准备：</strong>Claude API密钥 (访问 https://console.anthropic.com/ 获取)</p>
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <h4>下载项目代码</h4>
+                        <p>下载tobacco-writing-pipeline文件夹到本地</p>
+                    </div>
+                    <div class="step">
+                        <h4>配置API密钥</h4>
+                        <p>编辑.env文件，将CLAUDE_API_KEY设置为你的API密钥</p>
+                    </div>
+                    <div class="step">
+                        <h4>安装依赖</h4>
+                        <p>运行：pip install -r requirements.txt</p>
+                    </div>
+                    <div class="step">
+                        <h4>启动系统</h4>
+                        <p>运行：python run.py，然后访问 http://localhost:8501</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 方案三详细说明 -->
+            <div id="method3" style="margin-top: 50px;">
+                <h2 style="color: #2c3e50; margin-bottom: 30px; font-size: 2em;">⚡ 方案三：命令行版</h2>
+                
+                <p>适合程序员用户，快速生成改写提示词：</p>
+                
+                <div class="example-box">
+                    <h4>使用方法：</h4>
+                    <pre style="background: #2c3e50; color: white; padding: 15px; border-radius: 8px; overflow-x: auto;">
+# 直接处理文章内容
+python quick_rewrite.py "你的文章内容"
+
+# 从文件读取
+python quick_rewrite.py --file article.txt</pre>
+                </div>
+                
+                <p>脚本会生成完整的提示词并保存到rewrite_prompt.txt，复制到Claude中使用即可。</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🎯 中国烟草报风格改写系统 | 基于Claude多Agent架构</p>
+            <p style="margin-top: 10px; opacity: 0.8;">让公文写作更专业，让风格转换更准确</p>
+        </div>
+    </div>
+    
+    <script>
+        function copyPrompt() {
+            const promptContent = document.getElementById('prompt-content');
+            const textArea = document.createElement('textarea');
+            textArea.value = promptContent.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = document.querySelector('.copy-btn');
+            const originalText = button.textContent;
+            button.textContent = '已复制！';
+            button.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#3498db';
+            }, 2000);
+        }
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
