@@ -16,6 +16,13 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
+import sys
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass
+
 
 # 设置页面配置
 st.set_page_config(
