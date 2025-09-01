@@ -3,10 +3,17 @@
 优化为云端部署，简化配置，提升性能
 """
 
+# 修复 sqlite3 版本兼容性问题
+import sys
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass
+
 import streamlit as st
 import asyncio
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
