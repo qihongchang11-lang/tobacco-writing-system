@@ -16,13 +16,11 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
-import sys
-try:
-    import pysqlite3
-    sys.modules["sqlite3"] = pysqlite3
-except ImportError:
-    pass
 
+# 路径修复
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # 设置页面配置
 st.set_page_config(
@@ -32,11 +30,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 添加项目路径
-if str(Path(__file__).parent.parent) not in sys.path:
-    sys.path.append(str(Path(__file__).parent.parent))
-
-# 检查云端环境
 def check_cloud_environment():
     """检查云端环境配置"""
     claude_api_key = os.getenv('CLAUDE_API_KEY')
@@ -44,44 +37,111 @@ def check_cloud_environment():
         return False, "未配置Claude API密钥"
     return True, "环境配置正常"
 
-# 初始化会话状态
 def init_session_state():
     """初始化会话状态"""
     if "processing_result" not in st.session_state:
         st.session_state.processing_result = None
     if "environment_checked" not in st.session_state:
         st.session_state.environment_checked = False
+    if "pipeline_initialized" not in st.session_state:
+        st.session_state.pipeline_initialized = False
 
-# 简化的改写处理（云端版本）
-async def process_article_cloud(content, title="", author=""):
-    """云端版本的文章处理 - 直接调用Agent系统"""
+@st.cache_resource
+def get_main_pipeline():
+    """获取主流水线实例，带错误处理"""
     try:
-        # 这里导入我们的主流水线
-        from main_pipeline import main_pipeline
+        st.info("正在初始化Agent系统...")
         
-        # 初始化知识库
-        if not hasattr(st.session_state, 'kb_initialized'):
-            with st.spinner("正在初始化知识库..."):
-                await main_pipeline.initialize_knowledge_base()
-                st.session_state.kb_initialized = True
+        # 逐步导入，便于错误诊断
+        try:
+            from main_pipeline import main_pipeline
+            st.success("✅ 主流水线导入成功")
+            return main_pipeline
+        except ImportError as e:
+            st.error(f"❌ 主流水线导入失败: {e}")
+            # 尝试备用导入路径
+            try:
+                sys.path.append(str(Path(__file__).parent))
+                from main_pipeline import main_pipeline
+                st.success("✅ 备用路径导入成功")
+                return main_pipeline
+            except Exception as e2:
+                st.error(f"❌ 备用导入也失败: {e2}")
+                return None
+                
+    except Exception as e:
+        st.error(f"❌ 系统初始化失败: {e}")
+        return None
+
+async def process_article_cloud(content, title="", author=""):
+    """云端版本的文章处理 - 调用完整Agent系统"""
+    try:
+        # 获取流水线
+        pipeline = get_main_pipeline()
+        if not pipeline:
+            return None
+            
+        # 初始化知识库（如果需要）
+        if not st.session_state.pipeline_initialized:
+            with st.spinner("正在初始化知识库和向量数据库..."):
+                try:
+                    await pipeline.initialize_knowledge_base()
+                    st.session_state.pipeline_initialized = True
+                    st.success("✅ 知识库初始化成功")
+                except Exception as e:
+                    st.warning(f"⚠️ 知识库初始化失败: {e}")
+                    st.info("将使用基础模式运行")
         
         # 处理文章
-        with st.spinner("正在处理文章..."):
-            result = await main_pipeline.process_article(content, title, author)
-            return result
+        st.info("开始处理文章，调用完整Agent流水线...")
+        result = await pipeline.process_article(content, title, author)
+        
+        if result:
+            st.success("✅ Agent流水线处理完成")
+        return result
             
     except Exception as e:
-        st.error(f"处理失败: {str(e)}")
+        st.error(f"❌ 处理失败: {str(e)}")
+        st.error(f"详细错误信息: {type(e).__name__}")
         return None
 
 def sync_process_article(content, title="", author=""):
-    """同步包装器"""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    """同步包装器，带详细错误处理"""
     try:
-        return loop.run_until_complete(process_article_cloud(content, title, author))
-    finally:
-        loop.close()
+        # 创建新的事件循环
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(process_article_cloud(content, title, author))
+        finally:
+            loop.close()
+    except Exception as e:
+        st.error(f"❌ 同步处理失败: {e}")
+        return None
+
+def show_system_diagnostics():
+    """显示系统诊断信息"""
+    with st.expander("🔧 系统诊断信息", expanded=False):
+        st.write("**Python路径:**")
+        for path in sys.path[:5]:  # 只显示前5个路径
+            st.code(path)
+        
+        st.write("**环境变量:**")
+        claude_key = os.getenv('CLAUDE_API_KEY', '')
+        st.write(f"CLAUDE_API_KEY: {'✅ 已配置' if claude_key else '❌ 未配置'}")
+        
+        st.write("**模块检查:**")
+        modules_to_check = [
+            'anthropic', 'streamlit', 'pandas', 'numpy', 
+            'pydantic', 'loguru', 'requests'
+        ]
+        
+        for module in modules_to_check:
+            try:
+                __import__(module)
+                st.write(f"✅ {module}")
+            except ImportError:
+                st.write(f"❌ {module}")
 
 def main():
     """主应用"""
@@ -102,14 +162,12 @@ def main():
             st.error(f"❌ {env_msg}")
             st.markdown("""
             ### 🔧 配置说明
-            此应用需要Claude API密钥才能运行。请联系管理员配置环境变量：
-            - `CLAUDE_API_KEY`: 你的Claude API密钥
-            
-            或者你可以：
-            1. 获取API密钥：https://console.anthropic.com/
-            2. 下载项目到本地部署
-            3. 使用我们提供的Claude对话版本（零配置）
+            此应用需要Claude API密钥才能运行。请在Streamlit Cloud的Secrets中配置：
+            ```toml
+            CLAUDE_API_KEY = "sk-ant-api03-你的密钥"
+            ```
             """)
+            show_system_diagnostics()
             return
         else:
             st.success(f"✅ {env_msg}")
@@ -120,12 +178,12 @@ def main():
         st.header("📚 系统信息")
         st.info("""
         **核心功能**:
-        - 🎭 体裁识别
-        - 🏗️ 结构重组  
-        - ✨ 风格改写
-        - 🔍 事实校对
-        - 📄 版式导出
-        - 📊 质量评估
+        - 🎭 体裁识别Agent
+        - 🏗️ 结构重组Agent
+        - ✨ 风格改写Agent
+        - 🔍 事实校对Agent
+        - 📄 版式导出Agent
+        - 📊 质量评估Agent
         """)
         
         st.header("🎯 使用提示")
@@ -133,8 +191,10 @@ def main():
         1. 输入要改写的文章内容
         2. 点击"开始改写"按钮
         3. 等待系统处理（约30-60秒）
-        4. 查看改写结果和质量评估
+        4. 查看完整的Agent处理结果
         """)
+        
+        show_system_diagnostics()
     
     # 主内容区域
     col1, col2 = st.columns([2, 1])
@@ -173,12 +233,12 @@ def main():
                     status_text = st.empty()
                     
                     stages = [
-                        "🎭 体裁识别中...",
-                        "🏗️ 结构重组中...",
-                        "✨ 风格改写中...", 
-                        "🔍 事实校对中...",
-                        "📄 版式导出中...",
-                        "📊 质量评估中..."
+                        "🎭 启动体裁识别Agent...",
+                        "🏗️ 启动结构重组Agent...",
+                        "✨ 启动风格改写Agent...", 
+                        "🔍 启动事实校对Agent...",
+                        "📄 启动版式导出Agent...",
+                        "📊 启动质量评估Agent..."
                     ]
                     
                     for i, stage in enumerate(stages):
@@ -189,17 +249,17 @@ def main():
                     try:
                         result = sync_process_article(content, title, author)
                         
-                        if result and result.final_content:
+                        if result and hasattr(result, 'final_content') and result.final_content:
                             st.session_state.processing_result = result
                             progress_bar.progress(1.0)
-                            status_text.text("✅ 处理完成！")
+                            status_text.text("✅ 完整Agent流水线处理完成！")
                             st.rerun()
                         else:
-                            st.error("❌ 处理失败，请稍后重试")
+                            st.error("❌ Agent流水线处理失败")
                             
                     except Exception as e:
                         st.error(f"❌ 处理异常: {str(e)}")
-                        st.info("💡 提示：如果是API配置问题，请联系管理员")
+                        st.error("请检查系统诊断信息或联系技术支持")
     
     with col2:
         st.header("📊 处理状态")
@@ -208,24 +268,25 @@ def main():
             result = st.session_state.processing_result
             
             # 基础信息
-            st.success("✅ 处理完成")
+            st.success("✅ Agent流水线处理完成")
             
             if hasattr(result, 'processing_time') and result.processing_time:
                 total_time = result.processing_time.get('total', 0)
                 st.metric("处理耗时", f"{total_time:.1f}秒")
             
             if hasattr(result, 'quality_result') and result.quality_result:
-                score = result.quality_result.metrics.overall_score
-                st.metric("质量评分", f"{score:.1%}")
-                
-                if score >= 0.8:
-                    st.success("🎉 改写质量优秀")
-                elif score >= 0.7:
-                    st.info("✅ 改写质量良好") 
-                else:
-                    st.warning("⚠️ 改写质量一般")
+                if hasattr(result.quality_result, 'metrics'):
+                    score = result.quality_result.metrics.overall_score
+                    st.metric("质量评分", f"{score:.1%}")
+                    
+                    if score >= 0.8:
+                        st.success("🎉 改写质量优秀")
+                    elif score >= 0.7:
+                        st.info("✅ 改写质量良好") 
+                    else:
+                        st.warning("⚠️ 改写质量一般")
         else:
-            st.info("等待处理...")
+            st.info("等待Agent流水线处理...")
     
     # 显示处理结果
     if st.session_state.processing_result:
@@ -234,17 +295,17 @@ def main():
 def show_results(result):
     """显示处理结果"""
     st.markdown("---")
-    st.header("🎉 改写结果")
+    st.header("🎉 Agent流水线处理结果")
     
     # 结果标签页
     tab1, tab2, tab3 = st.tabs(["📝 最终稿件", "📊 详细分析", "💾 导出下载"])
     
     with tab1:
-        if result.final_content:
+        if hasattr(result, 'final_content') and result.final_content:
             st.subheader("改写后的文章")
             st.markdown(f"""
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745;">
-                {result.final_content.replace('\n', '<br>')}
+                {result.final_content.replace(chr(10), '<br>')}
             </div>
             """, unsafe_allow_html=True)
             
@@ -258,24 +319,32 @@ def show_results(result):
         with col1:
             # 体裁识别结果
             if hasattr(result, 'genre_result') and result.genre_result:
-                st.subheader("🎭 体裁识别")
-                st.write(f"**识别结果**: {result.genre_result.genre.value}")
-                st.write(f"**置信度**: {result.genre_result.confidence:.1%}")
-                st.write(f"**分析**: {result.genre_result.reasoning}")
+                st.subheader("🎭 体裁识别Agent结果")
+                if hasattr(result.genre_result, 'genre'):
+                    st.write(f"**识别结果**: {result.genre_result.genre}")
+                if hasattr(result.genre_result, 'confidence'):
+                    st.write(f"**置信度**: {result.genre_result.confidence:.1%}")
+                if hasattr(result.genre_result, 'reasoning'):
+                    st.write(f"**分析**: {result.genre_result.reasoning}")
         
         with col2:
             # 质量评估
             if hasattr(result, 'quality_result') and result.quality_result:
-                st.subheader("📊 质量评估")
-                metrics = result.quality_result.metrics
-                
-                st.progress(metrics.title_completeness, text=f"标题完整性 ({metrics.title_completeness:.1%})")
-                st.progress(metrics.lead_quality, text=f"导语质量 ({metrics.lead_quality:.1%})")
-                st.progress(metrics.content_coherence, text=f"内容连贯性 ({metrics.content_coherence:.1%})")
-                st.progress(metrics.style_consistency, text=f"风格一致性 ({metrics.style_consistency:.1%})")
+                st.subheader("📊 质量评估Agent结果")
+                if hasattr(result.quality_result, 'metrics'):
+                    metrics = result.quality_result.metrics
+                    
+                    if hasattr(metrics, 'title_completeness'):
+                        st.progress(metrics.title_completeness, text=f"标题完整性 ({metrics.title_completeness:.1%})")
+                    if hasattr(metrics, 'lead_quality'):
+                        st.progress(metrics.lead_quality, text=f"导语质量 ({metrics.lead_quality:.1%})")
+                    if hasattr(metrics, 'content_coherence'):
+                        st.progress(metrics.content_coherence, text=f"内容连贯性 ({metrics.content_coherence:.1%})")
+                    if hasattr(metrics, 'style_consistency'):
+                        st.progress(metrics.style_consistency, text=f"风格一致性 ({metrics.style_consistency:.1%})")
         
         # 改进建议
-        if hasattr(result, 'quality_result') and result.quality_result and result.quality_result.suggestions:
+        if hasattr(result, 'quality_result') and result.quality_result and hasattr(result.quality_result, 'suggestions') and result.quality_result.suggestions:
             st.subheader("💡 改进建议")
             for suggestion in result.quality_result.suggestions:
                 st.write(f"• {suggestion}")
@@ -283,7 +352,7 @@ def show_results(result):
     with tab3:
         st.subheader("💾 导出选项")
         
-        if result.final_content:
+        if hasattr(result, 'final_content') and result.final_content:
             # 文本下载
             st.download_button(
                 label="📄 下载TXT文件",
@@ -293,13 +362,19 @@ def show_results(result):
             )
             
             # Markdown下载
-            markdown_content = f"""# {result.input_article.title or '改写稿件'}
+            title_text = ""
+            if hasattr(result, 'input_article') and result.input_article and hasattr(result.input_article, 'title'):
+                title_text = result.input_article.title or '改写稿件'
+            else:
+                title_text = '改写稿件'
+                
+            markdown_content = f"""# {title_text}
 
 {result.final_content}
 
 ---
 *改写时间: {datetime.now().strftime('%Y年%m月%d日 %H:%M')}*  
-*系统: 中国烟草报风格改写系统*
+*系统: 中国烟草报风格改写系统（完整Agent版）*
 """
             st.download_button(
                 label="📝 下载Markdown文件",
