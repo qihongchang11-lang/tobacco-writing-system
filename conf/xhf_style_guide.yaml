@@ -1,0 +1,189 @@
+meta:
+  source: 新华财经
+  sample_count: 12
+  article_types:
+  - tech_innovation
+  version: '1.0'
+structure_rules:
+  title:
+    length_range:
+    - 15
+    - 30
+    recommended_length: 20
+    patterns:
+    - 主副标题结构（用冒号分隔）
+    - 动宾结构+引号修饰
+    - 长叙事式（20字以上）
+    style: 简洁有力，突出创新点和成效
+  lead:
+    length_range:
+    - 60
+    - 120
+    recommended_length: 88
+    structure: 企业名+创新举措+核心成效+更高层意义
+    requirements:
+    - 一句话概括全文核心
+    - 包含时间、主体、行动、成果
+    - 避免空泛表述，突出具体成效
+  body:
+    paragraph_count: 5
+    structure:
+    - 背景/问题引入（为什么要做）
+    - 创新举措详解（怎么做的）
+    - 实施效果展示（数据+引语）
+    - 更高层意义总结（行业价值）
+    requirements:
+    - 每段3-5句，逻辑清晰
+    - 适当引用专家/员工发言
+    - 数据支撑，避免空谈
+    - 使用专业术语但保持可读性
+language_style:
+  tone: 专业、客观、权威
+  perspective: 第三人称叙述
+  key_principles:
+  - 数据驱动，避免夸张
+  - 行业术语准确使用
+  - 因果逻辑清晰
+  - 成效可量化可验证
+  avoid:
+  - 过度官腔（如'全面贯彻落实'等）
+  - 空洞口号
+  - 主观评价
+  - 冗长修饰
+terminology:
+  financial_terms:
+  - 智能制造
+  - 供应链
+  - 协同创新
+  - 精益化
+  - 标准化
+  - 高质量发展
+  - 产业升级
+  - 资源配置
+  - 节能增效
+  - 风险防控
+  - 系统性
+  - 数字化转型
+  - 效能提升
+  - 绿色低碳
+  action_verbs:
+  - 推动
+  - 夯实
+  - 赋能
+  - 融合
+  - 助力
+  - 筑牢
+  - 释放
+  - 提升
+  - 强化
+  - 深化
+  - 促进
+  - 激发
+  - 优化
+  - 突破
+  - 实现
+  - 创新
+  - 构建
+  modifiers:
+  - 精益
+  - 系统
+  - 深入
+  - 协同
+  - 智能
+  - 全面
+  - 持续
+  - 集成
+  - 高效
+  - 可复制
+  - 精准
+  - 一体化
+  - 柔性
+
+  # 新增：财经单位白名单
+  financial_units:
+  - 万元
+  - 亿元
+  - 万箱
+  - 万吨
+  - '%'
+  - 个百分点
+  - 同比
+  - 环比
+  - YoY
+  - 增速
+  - 占比
+
+  # 新增：正向表达替代（避免"只删不写"）
+  positive_alternatives:
+  - 显著提升
+  - 带动增长
+  - 实现目标
+  - 助推发展
+  - 支撑转型
+  - 赋能升级
+  - 激发活力
+  - 释放潜能
+  - 有力推动
+  - 有效促进
+
+# 新增：语篇线索词（用于结构判定）
+discourse_cues:
+  background:  # 背景
+  - 近日
+  - 今年以来
+  - 近年来
+  - 围绕
+  - 为落实
+  - 在…指导下
+  - 针对
+  - 聚焦
+
+  action:  # 举措
+  - 推出
+  - 上线
+  - 改造
+  - 引入
+  - 部署
+  - 试点
+  - 启动
+  - 实施
+  - 开展
+  - 构建
+
+  result:  # 结果
+  - 提升
+  - 降低
+  - 同比
+  - 环比
+  - 增长
+  - 突破
+  - 达到
+  - 实现
+
+  significance:  # 意义
+  - 有力支撑
+  - 示范带动
+  - 为…奠定基础
+  - 提供参考
+  - 推动
+  - 助力
+
+  future:  # 后续
+  - 下一步
+  - 将继续
+  - 计划
+  - 拟
+
+quality_checks:
+  title_length:
+    min: 15
+    max: 30
+  lead_length:
+    min: 60
+    max: 120
+  financial_term_coverage:
+    min_ratio: 0.8
+  data_presence:
+    required: true
+  quote_presence:
+    recommended: true
