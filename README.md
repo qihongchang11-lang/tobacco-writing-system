@@ -1,79 +1,265 @@
-# 中国烟草报风格改写流水线系统
+# 智能文稿改写系统 - 统一仓库
 
-基于Claude多Agent架构的中国烟草报风格公文写作改写应用，通过学习行业写作风格，将初稿改写为符合中国烟草报标准的专业稿件。
+## 📋 项目简介
 
-## 🏗️ 系统架构
+本仓库包含两个独立的AI驱动智能改写系统：
 
+### 1. 东方烟草报 & 新华财经风格改写系统（端口8081）
+基于Few-shot学习的新闻文稿改写，支持两种专业财经报道风格
+
+### 2. CNIPA发明专利高质量改写系统（端口8082）
+符合中国国家知识产权局标准的专利文档自动生成系统
+
+**两个系统共享开发环境，但功能完全独立，可分别部署使用。**
+
+---
+
+## 🎯 系统概览
+
+### 新闻改写系统
+
+**核心功能**：
+- ✅ 东方烟草报风格：行业专业、准确严谨
+- ✅ 新华财经风格：文学化、诗意化、修辞丰富
+- ✅ Few-shot学习（34个高质量样本）
+- ✅ 混合检索（BM25 + 语义相似度）
+- ✅ XHF文学化增强组件
+- ✅ 约束解码保护重要实体
+
+**开发程度**：90%完成
+**端口**：8081(API) / 8501(Streamlit)
+**主要文件**：`news_api_main.py`, `streamlit_app.py`, `core/`, `agents/`, `knowledge_base/`
+
+### 专利生成系统
+
+**核心功能**：
+- 🔧 自动生成专利四件套（说明书、权利要求书、摘要、交底书）
+- 🔧 PSE提取（Problem-Solution-Effect）
+- 🔧 KTF DAG构建（关键技术特征有向无环图）
+- 🔧 6个质量门自动验证
+- 🔧 CNIPA 2024标准合规
+
+**开发程度**：60-70%完成（框架完整，业务逻辑待补全）
+**端口**：8082
+**主要文件**：`patent_api_main.py`, `docs/patent/`
+
+---
+
+## 🚀 快速开始
+
+### 安装依赖
+
+```bash
+# 克隆仓库
+git clone https://github.com/qihongchang11-lang/tobacco-writing-system.git
+cd tobacco-writing-system
+
+# 安装依赖
+pip install -r requirements.txt
 ```
-原稿输入 → 体裁判定 → 结构重组 → 风格改写 → 事实校对 → 版式导出 → 质量评估
+
+### 配置环境变量
+
+创建`.env`文件：
+
+```bash
+cp .env.separated .env
+# 编辑.env文件，配置API密钥和端口
 ```
+
+示例配置：
+```env
+# OpenAI API配置
+OPENAI_API_KEY=your_api_key_here
+OPENAI_BASE_URL=https://api.deepseek.com/v1
+OPENAI_MODEL=deepseek-chat
+
+# 新闻系统
+NEWS_API_HOST=0.0.0.0
+NEWS_API_PORT=8081
+
+# 专利系统
+PATENT_API_HOST=0.0.0.0
+PATENT_API_PORT=8082
+```
+
+### 启动服务
+
+#### 启动新闻系统
+
+```bash
+# FastAPI后端（端口8081）
+python news_api_main.py
+
+# Streamlit前端（端口8501）
+streamlit run streamlit_app.py
+
+# 使用启动脚本
+./scripts/start-news.sh
+```
+
+访问：http://localhost:8081/docs 或 http://localhost:8501
+
+#### 启动专利系统
+
+```bash
+# FastAPI后端（端口8082）
+python patent_api_main.py
+
+# 使用启动脚本
+./scripts/start-patent.sh
+```
+
+访问：http://localhost:8082/docs
+
+#### 同时启动两个系统
+
+```bash
+./scripts/start-all.sh
+```
+
+---
 
 ## 📁 项目结构
 
 ```
-tobacco-writing-pipeline/
-├── agents/                 # 6个专业Agent
-│   ├── genre_classifier.py      # 体裁识别Agent
-│   ├── structure_reorganizer.py # 结构重组Agent
-│   ├── style_rewriter.py        # 风格改写Agent
-│   ├── fact_checker.py          # 事实校对Agent
-│   ├── format_exporter.py       # 版式导出Agent
-│   └── quality_evaluator.py     # 质量评估Agent
-├── knowledge_base/         # 知识库系统
-│   ├── style_cards/        # 风格卡库
-│   ├── sentence_patterns/  # 句式库
-│   └── terminology/        # 术语口径库
-├── templates/              # 文档模板
-├── web_interface/          # Web界面
-├── utils/                  # 工具函数
-├── data/                   # 数据存储
-└── tests/                  # 测试代码
+tobacco-writing-system/
+├── README.md                          # 本文件（总览）
+│
+├── 【新闻系统】
+├── news_api_main.py                   # 新闻API入口
+├── streamlit_app.py                   # Streamlit前端
+├── core/                              # 核心模块
+│   ├── constraint_decoder.py          # 约束解码器
+│   ├── xhf_style_injector.py          # XHF风格注入器
+│   ├── xhf_quality_checker.py         # XHF质量检查器
+│   └── ...
+├── agents/                            # 智能代理
+│   └── few_shot_rewriter.py          # Few-shot改写器
+├── knowledge_base/                    # 知识库（34样本）
+│   └── intelligent_retriever.py       # 智能检索器
+├── conf/                              # 新闻系统配置
+│
+├── 【专利系统】
+├── patent_api_main.py                 # 专利API入口
+├── docs/patent/                       # 专利文档
+│   ├── Project_Requirements_Summary.md
+│   └── Patent_Rewrite_SOP_v1.1.md
+│
+├── 【共享文档】
+├── docs/
+│   ├── shared/                        # 跨系统文档
+│   │   ├── SYSTEM_ANALYSIS_REPORT.md  # ⭐三系统完整分析
+│   │   └── GITHUB_SYNC_README.md
+│   └── news-system-docs/              # 新闻系统文档
+│       ├── PROJECT_K2_SPECIFICATION.md
+│       ├── PHASE1_COMPLETION_REPORT.md
+│       └── ...
+│
+├── 【部署脚本】
+├── scripts/
+│   ├── start-news.sh                  # 启动新闻系统
+│   ├── start-patent.sh                # 启动专利系统
+│   └── start-all.sh                   # 同时启动
+│
+└── 【配置】
+    ├── .env                           # 环境变量（不提交）
+    ├── .env.separated                 # 环境变量示例
+    └── requirements.txt               # Python依赖
 ```
 
-## 🚀 快速开始
+---
 
-1. **安装依赖**
+## 📡 API使用
+
+### 新闻系统
+
 ```bash
-pip install -r requirements.txt
+# 改写接口
+curl -X POST http://localhost:8081/rewrite \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "原始文稿...",
+    "style": "tobacco",
+    "strict_mode": false
+  }'
+
+# 健康检查
+curl http://localhost:8081/health
 ```
 
-2. **配置环境变量**
+### 专利系统
+
 ```bash
-cp .env.example .env
-# 编辑.env文件，填入Claude API密钥
+# 专利处理
+curl -X POST http://localhost:8082/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "draft_content": "发明草稿...",
+    "title": "一种xxx装置",
+    "invention_type": "invention",
+    "enable_checks": true
+  }'
+
+# 质量门检查
+curl http://localhost:8082/gates/A
 ```
 
-3. **启动Web界面**
-```bash
-streamlit run web_interface/app.py
-```
+---
 
-## 🔧 核心功能
+## 📚 重要文档
 
-- **智能体裁识别**: 自动识别新闻、评论、通讯等文章类型
-- **结构化重组**: 按烟草报标准重新组织文章结构
-- **风格化改写**: 基于大量样本学习的语言风格转换
-- **专业校对**: 术语一致性和事实准确性检查
-- **标准化导出**: 生成符合格式要求的DOCX文档
-- **质量评估**: 多维度评分和改进建议
+### 必读
+- [三系统完整分析报告](docs/shared/SYSTEM_ANALYSIS_REPORT.md) ⭐ **推荐首读**
 
-## 📚 知识库
+### 新闻系统
+- [K2项目规格](docs/news-system-docs/PROJECT_K2_SPECIFICATION.md)
+- [阶段1完成报告](docs/news-system-docs/PHASE1_COMPLETION_REPORT.md)
+- [质量差距分析](docs/news-system-docs/QUALITY_GAP_ANALYSIS_REPORT.md)
 
-系统内置三大知识库：
-- **风格卡**: 不同体裁的写作特征
-- **句式库**: 常用表达和转换模式  
-- **术语库**: 行业标准用词规范
+### 专利系统
+- [项目需求总结](docs/patent/Project_Requirements_Summary.md)
+- [专利改写SOP v1.1](docs/patent/Patent_Rewrite_SOP_v1.1.md)
 
-## 🔄 持续优化
+---
 
-- 回归测试框架
-- A/B测试对比
-- 人工反馈循环
-- 增量学习机制
+## 🔧 开发状态
 
-## 📊 质量指标
+| 系统 | 进度 | 主要功能 | 待完成 |
+|------|------|----------|--------|
+| 新闻系统 | 90% | ✅ Few-shot学习<br>✅ 双风格支持<br>✅ XHF增强 | ⏳ 风格选择参数<br>⏳ 性能优化 |
+| 专利系统 | 60-70% | ✅ API框架<br>✅ 文档规范<br>✅ 质量门定义 | ⏳ PSE提取器<br>⏳ KTF构建<br>⏳ Claims生成 |
 
-- 标题导语完整性
-- 数据事实准确性
-- 语言风格一致性
-- 格式规范符合度
+---
+
+## 🤝 协作指南
+
+### 新协作者快速上手
+
+1. **理解全局**（15分钟）：阅读 [SYSTEM_ANALYSIS_REPORT.md](docs/shared/SYSTEM_ANALYSIS_REPORT.md)
+2. **选择系统**：根据兴趣阅读对应系统文档
+3. **查看代码**：
+   - 新闻：`news_api_main.py` + `agents/few_shot_rewriter.py`
+   - 专利：`patent_api_main.py` + `docs/patent/`
+
+### 为什么单仓库？
+
+✅ 保留完整Git历史
+✅ 统一协作环境
+✅ 共享文档和分析报告
+✅ 可能有共享代码模块
+
+---
+
+## 📞 联系方式
+
+- **Issues**: https://github.com/qihongchang11-lang/tobacco-writing-system/issues
+- **项目主页**: https://github.com/qihongchang11-lang/tobacco-writing-system
+
+---
+
+**最后更新**：2025年11月14日
+**维护状态**：活跃开发中
+**技术栈**：Python + FastAPI + Streamlit + DeepSeek + Sentence-Transformers
+
+🤖 Generated with Claude Code

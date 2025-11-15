@@ -1,0 +1,24 @@
+{
+  "phase": "Phase-1",
+  "phase_done": true,
+  "service": {
+    "port": 8081,
+    "health": "http://localhost:8081/health",
+    "rewrite": "http://localhost:8081/rewrite"
+  },
+  "guards": {
+    "whitelist_entities": true,
+    "no_new_numbers": true,
+    "placeholder_leak_safe": true,
+    "retry_strict_mode": true
+  },
+  "retrieval": {
+    "bm25": true,
+    "lru_cache": true
+  },
+  "todo_next": [
+    "补充 column_rules.yaml（东方烟草报栏目）",
+    "准备真实文章样本 data/samples/",
+    "执行批量 rewrite 测试并生成达标率报告"
+  ]
+}
