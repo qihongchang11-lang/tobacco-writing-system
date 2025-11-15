@@ -11,6 +11,9 @@ echo ""
 echo "提示: 使用 Ctrl+C 停止所有服务"
 echo ""
 
+# 准备日志目录
+mkdir -p logs
+
 # 启动新闻系统(后台运行)
 echo "[1/2] 启动新闻系统(端口8081)..."
 python news_api_main.py > logs/news.log 2>&1 &

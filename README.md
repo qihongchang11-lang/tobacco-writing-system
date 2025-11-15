@@ -211,15 +211,31 @@ curl http://localhost:8082/gates/A
 
 ### 必读
 - [三系统完整分析报告](docs/shared/SYSTEM_ANALYSIS_REPORT.md) ⭐ **推荐首读**
+- [项目工作总结与经验教训](docs/shared/PROJECT_WORK_SUMMARY.md) 📋 **完整工作回顾**
+
+### 项目管理与决策
+- [技术决策记录(ADR)](docs/shared/ARCHITECTURE_DECISIONS.md) - 重要技术决策的背景和理由
+- [开发与协作最佳实践](docs/shared/BEST_PRACTICES.md) - 基于实战的开发指南
 
 ### 新闻系统
 - [K2项目规格](docs/news-system-docs/PROJECT_K2_SPECIFICATION.md)
 - [阶段1完成报告](docs/news-system-docs/PHASE1_COMPLETION_REPORT.md)
 - [质量差距分析](docs/news-system-docs/QUALITY_GAP_ANALYSIS_REPORT.md)
+- [使用指南](docs/news-system-docs/USAGE_GUIDE.md)
+- [一键工作流操作手册](docs/news-system-docs/ONE_CLICK_WORKFLOW.md)
+- [简易入口汇总](docs/news-system-docs/SIMPLE_ENTRY.md)
+- [Claude控制台版流程](docs/news-system-docs/CLAUDE_CONSOLE_GUIDE.md)
+- [完整开发计划](docs/news-system-docs/DEVELOPMENT_PLAN_FINAL.md)
 
 ### 专利系统
 - [项目需求总结](docs/patent/Project_Requirements_Summary.md)
 - [专利改写SOP v1.1](docs/patent/Patent_Rewrite_SOP_v1.1.md)
+
+### 通用运维与部署
+- [云端部署指南](docs/shared/CLOUD_DEPLOY_GUIDE.md)
+- [部署检查清单](docs/shared/DEPLOY_CHECKLIST.md)
+- [服务分离实施说明](docs/shared/README_SERVICE_SEPARATION.md)
+- [服务分离PR摘要](docs/shared/PR_SUMMARY_SERVICE_SEPARATION.md)
 
 ---
 
