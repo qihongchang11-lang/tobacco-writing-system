@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+!.env.separated
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.streamlit/secrets.toml
+.playwright-cli/
+*.log
+*.tmp
+*.bak
