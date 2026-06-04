@@ -18,6 +18,7 @@ import os
 import requests
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 # 路径修复
 project_root = Path(__file__).parent
@@ -52,8 +53,10 @@ ERROR_HINTS = {
     401: "模型 Key 认证失败，请检查开发副本 .env 中的 OPENAI_API_KEY。",
     404: "模型名或接口路径错误，请检查 OPENAI_MODEL 和 OPENAI_BASE_URL。",
     429: "请求过于频繁或额度限制，请稍后重试或检查 DeepSeek 额度。",
-    500: "后端生成失败，请查看 8082 后端 PowerShell 日志。",
+    500: "后端生成失败，请查看新闻后端 PowerShell 日志。",
 }
+
+DEFAULT_BACKEND_BASE = "http://localhost:8081"
 
 
 def inject_local_styles():
@@ -408,7 +411,18 @@ def ensure_local_state():
 
 
 def get_backend_base() -> str:
-    return os.getenv("NEWS_TOBACCO_BASE", "http://localhost:8082").rstrip("/")
+    return os.getenv("NEWS_TOBACCO_BASE", DEFAULT_BACKEND_BASE).rstrip("/")
+
+
+def get_backend_port_label(backend_base: str) -> str:
+    parsed = urlparse(backend_base)
+    if parsed.port:
+        return str(parsed.port)
+    if parsed.scheme == "https":
+        return "443"
+    if parsed.scheme == "http":
+        return "80"
+    return "未指定"
 
 
 def check_backend_status(backend_base: str) -> dict:
@@ -426,7 +440,7 @@ def friendly_error(status_code: int | None, detail: str) -> str:
     if status_code in ERROR_HINTS:
         return ERROR_HINTS[status_code]
     if status_code is None:
-        return "无法连接后端，请确认 8082 后端服务是否启动。"
+        return "无法连接后端，请确认新闻后端服务已启动；默认地址为 http://localhost:8081，可通过 NEWS_TOBACCO_BASE 覆盖。"
     return f"请求失败，HTTP {status_code}。请查看后端日志。"
 
 
@@ -459,6 +473,7 @@ def render_fastapi_client():
 
     backend_base = get_backend_base()
     endpoint = f"{backend_base}/rewrite"
+    backend_port = get_backend_port_label(backend_base)
     model_name = os.getenv("OPENAI_MODEL", "deepseek-v4-pro")
 
     if st.session_state.backend_status is None:
@@ -474,8 +489,8 @@ def render_fastapi_client():
             <p>面向行业新闻、工作动态与综合材料的智能改写工作台</p>
             <div class="status-row">
                 <span class="status-pill">模型 {html.escape(model_name)}</span>
-                <span class="status-pill">后端端口：8082</span>
-                <span class="status-pill">当前环境：开发版</span>
+                <span class="status-pill">后端端口：{html.escape(backend_port)}</span>
+                <span class="status-pill">当前环境：新闻工作台</span>
                 <span class="status-pill {'ok' if backend_ok else ''}">接口状态：{backend_label}</span>
             </div>
         </div>
@@ -487,7 +502,7 @@ def render_fastapi_client():
         st.markdown(
             """
             <div class="sidebar-title">参数设置</div>
-            <div class="sidebar-subtitle">开发版工作台配置，仅连接 8082 后端。</div>
+            <div class="sidebar-subtitle">默认连接 http://localhost:8081；如需开发端口，可通过 NEWS_TOBACCO_BASE 覆盖。</div>
             """,
             unsafe_allow_html=True,
         )
@@ -526,7 +541,7 @@ def render_fastapi_client():
                     <span>后端状态</span>
                     <strong>{html.escape(backend_label)}</strong>
                     <span>模型：{html.escape(model_name)}</span>
-                    <span>端口：8082 / 8502</span>
+                    <span>后端端口：{html.escape(backend_port)}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
